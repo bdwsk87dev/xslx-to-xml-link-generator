@@ -1,0 +1,1 @@
+import{R as e}from"./app.js";const m=({xmlFile:o,content:t})=>{const r=new DOMParser().parseFromString(t,"application/xml").documentElement;return e.createElement("div",null,e.createElement("pre",null,r.outerHTML))};export{m as default};

@@ -1,0 +1,59 @@
+version: "3.7"
+
+services:
+    php:
+        env_file:
+            - .env
+        build:
+            args:
+                user: john
+                uid: 1000
+            context: ./docker
+            dockerfile: php-fpm.Dockerfile
+        restart: unless-stopped
+        working_dir: /var/www/
+        volumes:
+            - ./:/var/www
+        depends_on:
+            - mysql
+
+    mysql:
+        env_file: ./.env
+        image: mysql:8
+        restart: unless-stopped
+        environment:
+            MYSQL_DATABASE: ${DB_DATABASE}
+            MYSQL_ROOT_PASSWORD: ${DB_PASSWORD}
+            MYSQL_PASSWORD: ${DB_PASSWORD}
+            MYSQL_USER: ${DB_USERNAME}
+            SERVICE_TAGS: dev
+            SERVICE_NAME: mysql
+        volumes:
+            - ./db:/var/lib/mysql
+        ports:
+            - 3306:3306
+
+    nginx:
+        image: nginx:1.17-alpine
+        restart: unless-stopped
+        ports:
+            - "8000:80"
+        volumes:
+            - ./:/var/www
+            - ./docker/nginx:/etc/nginx/conf.d
+        depends_on:
+            - php
+
+    node:
+        build:
+            context: ./docker
+            dockerfile: node.Dockerfile
+        tty: true
+        volumes:
+            - ./:/var/www
+
+    mailhog:
+        image: mailhog/mailhog:v1.0.0
+        ports:
+            - "1025:1025"
+            - "8025:8025"
