@@ -270,8 +270,6 @@ class XmlFileController extends Controller
                 $category['ParentID'] = $row[3];
             }
 
-
-
             // Добавление категории в список категорий
             $shop['categories'][] = ['category' => $category];
         }

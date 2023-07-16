@@ -8,16 +8,24 @@ const List = ({xmlFiles}) => {
 
     const [sortColumn, setSortColumn] = useState(null);
     const [sortDirection, setSortDirection] = useState('asc');
+    const [searchString, ssetSarchString] = useState('');
+    const [perPage, setperPage] = useState(10);
+    const [page, setPage] = useState(1);
 
     const sortBy = (column) => {
         let order = 'asc';
         if (sortColumn === column && sortDirection === 'asc') {
             order = 'desc';
         }
-
         Inertia.visit('/list', {
             method: 'get',
-            data: { sort_by: column, order, per_page: xmlFiles.per_page, search: xmlFiles.current_page === 1 ? search : '' },
+            data: {
+                sort_by: column,
+                order,
+                per_page: perPage,
+                search: searchString,
+                page: page
+            },
             preserveState: true
         });
 
@@ -26,23 +34,53 @@ const List = ({xmlFiles}) => {
     };
     const changePerPage = (e) => {
         const perPage = e.target.value;
+        setperPage(perPage);
         Inertia.visit('/list', {
             method: 'get',
-            data: { per_page: perPage, sort_by: sortColumn, order: sortDirection, search: xmlFiles.current_page === 1 ? search : '' },
+            data: {
+                per_page: perPage,
+                sort_by: sortColumn,
+                order: sortDirection,
+                search: searchString,
+                page: 1
+            },
             preserveState: true
         });
     }
+
+    const changePage = (page) => {
+        setPage(page);
+        Inertia.visit('/list', {
+            method: 'get',
+            data: {
+                sort_by: sortColumn,
+                order: sortDirection,
+                per_page: perPage,
+                search: searchString,
+                page: page
+            },
+            preserveState: true
+        });
+    }
+
 
     const search = (e) => {
         const searchString = e.target.value;
         if (e.key === 'Enter') {
             Inertia.visit('/list', {
                 method: 'get',
-                data: { search: searchString, sort_by: sortColumn, order: sortDirection, per_page: xmlFiles.per_page },
+                data: {
+                    search: searchString,
+                    sort_by: sortColumn,
+                    order: sortDirection,
+                    per_page: xmlFiles.per_page,
+                    page: 1
+                },
                 preserveState: true
             });
             setSortColumn(null);
             setSortDirection('asc');
+            ssetSarchString(searchString);
         }
     }
 
@@ -74,9 +112,15 @@ const List = ({xmlFiles}) => {
                         <ul className="pagination">
                             {xmlFiles.links.map((link, key) => (
                                 <li key={key} className={`page-item ${link.active ? 'active' : ''}`}>
-                                    <InertiaLink href={link.url} className="page-link">
-                                        {link.label.replace(/&laquo;/g, '').replace(/&raquo;/g, '')}
-                                    </InertiaLink>
+                                    {link.label !== "..." ? (
+                                        <p onClick={() => changePage(link.url.match(/page=(\d+)/)?.[1])} className="page-link">
+                                            {link.label.replace(/&laquo;/g, '').replace(/&raquo;/g, '')}
+                                        </p>
+                                    ) :
+                                        <p className="page-link">
+                                            ...
+                                        </p>
+                                    }
                                 </li>
                             ))}
                         </ul>
@@ -90,7 +134,7 @@ const List = ({xmlFiles}) => {
                 <tr>
                     <th onClick={() => sortBy('id')} style={{ cursor: 'pointer', padding: '8px', border: '1px solid #ddd', backgroundColor: '#f2f2f2', fontWeight: 'bold', textAlign: 'left' }}>ID</th>
                     <th onClick={() => sortBy('shop_name')} style={{ cursor: 'pointer', padding: '8px', border: '1px solid #ddd', backgroundColor: '#f2f2f2', fontWeight: 'bold', textAlign: 'left' }}>Shop name</th>
-                    <th onClick={() => sortBy('shop_link')} style={{ cursor: 'pointer', padding: '8px', border: '1px solid #ddd', backgroundColor: '#f2f2f2', fontWeight: 'bold', textAlign: 'left' }}>Link</th>
+                    <th onClick={() => sortBy('shop_link')} style={{ cursor: 'pointer', padding: '8px', border: '1px solid #ddd', backgroundColor: '#f2f2f2', fontWeight: 'bold', textAlign: 'left' }}>Shop Link</th>
                     <th onClick={() => sortBy('uploadDateTime')} style={{ cursor: 'pointer', padding: '8px', border: '1px solid #ddd', backgroundColor: '#f2f2f2', fontWeight: 'bold', textAlign: 'left' }}>Date upload</th>
                     <th onClick={() => sortBy('lastCheckDateTime')} style={{ cursor: 'pointer', padding: '8px', border: '1px solid #ddd', backgroundColor: '#f2f2f2', fontWeight: 'bold', textAlign: 'left' }}>Last check</th>
                     <th style={{ padding: '8px', border: '1px solid #ddd', backgroundColor: '#f2f2f2', fontWeight: 'bold', textAlign: 'left' }}>Link</th>
@@ -104,7 +148,7 @@ const List = ({xmlFiles}) => {
                         <td style={{ padding: '8px', border: '1px solid #ddd' }}>{xmlFile.shop_name}</td>
                         <td style={{ padding: '8px', border: '1px solid #ddd' }}><a href={xmlFile.shop_link} target="_blank">{xmlFile.shop_link}</a></td>
                         <td style={{ padding: '8px', border: '1px solid #ddd' }}>{format(new Date(xmlFile.created_at), 'dd.MM.yyyy HH:mm:ss')}</td>
-                        <td style={{ padding: '8px', border: '1px solid #ddd' }}></td>
+                        <td style={{ padding: '8px', border: '1px solid #ddd' }}>{format(new Date(xmlFile.lastCheckDateTime), 'dd.MM.yyyy HH:mm:ss')}</td>
                         <td style={{ padding: '8px', border: '1px solid #ddd' }}><a href={`/api/show/${xmlFile.id}`} target="_blank">Link</a></td>
 
                     </tr>
@@ -118,9 +162,15 @@ const List = ({xmlFiles}) => {
                             <ul className="pagination">
                                 {xmlFiles.links.map((link, key) => (
                                     <li key={key} className={`page-item ${link.active ? 'active' : ''}`}>
-                                        <InertiaLink href={link.url} className="page-link">
-                                            {link.label}
-                                        </InertiaLink>
+                                        {link.label !== "..." ? (
+                                                <p onClick={() => changePage(link.url.match(/page=(\d+)/)?.[1])} className="page-link">
+                                                    {link.label.replace(/&laquo;/g, '').replace(/&raquo;/g, '')}
+                                                </p>
+                                            ) :
+                                            <p className="page-link">
+                                                ...
+                                            </p>
+                                        }
                                     </li>
                                 ))}
                             </ul>
