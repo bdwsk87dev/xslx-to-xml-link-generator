@@ -155,45 +155,49 @@ class XmlFileController extends Controller
     {
 
         $data = [];
-        $sheets = $spreadsheet->getAllSheets();
+ //       $sheets = $spreadsheet->getAllSheets();
 
-        foreach ($sheets as $sheet) {
-            $rows = $sheet->toArray();
-            $data = array_merge($data, $rows);
-        }
+//        foreach ($sheets as $sheet) {
+//            $rows = $sheet->toArray();
+//            $data = array_merge($data, $rows);
+//        }
+
+        $worksheet = $spreadsheet->getSheetByName('Export Products Sheet');
+        $rows = $worksheet->toArray();
+        $data = array_slice($rows, 1); // Пропускаем заголовки
 
         $shop = [
-            'Name' => 'Allegro *UA*',
-            'Company' => 'Allegro *UA*',
-            'URL' => 'Allegro *UA*',
-            'Currencies' => [
-                ['ID' => 'USD', 'Rate' => 'CB'],
-                ['ID' => 'PLN', 'Rate' => '1'],
-                ['ID' => 'BYN', 'Rate' => 'CB'],
-                ['ID' => 'KZT', 'Rate' => 'CB'],
-                ['ID' => 'EUR', 'Rate' => 'CB'],
+            'name' => 'Allegro *UA*',
+            'company' => 'Allegro *UA*',
+            'url' => 'Allegro *UA*',
+            'currencies' => [
+                ['currency' => ['ID' => 'USD', 'Rate' => 'CB']],
+                ['currency' => ['ID' => 'PLN', 'Rate' => '1']],
+                ['currency' => ['ID' => 'BYN', 'Rate' => 'CB']],
+                ['currency' => ['ID' => 'KZT', 'Rate' => 'CB']],
+                ['currency' => ['ID' => 'EUR', 'Rate' => 'CB']],
             ],
-            'Categories' => [],
-            'Offers' => [],
+            'categories' => [],
+            'offers' => [],
         ];
 
         try {
 
-            $shop['Offers'] = [];
+            $shop['offers'] = [];
 
             foreach ($data as $row) {
 
                 $offer = [
                     'ID' => $row[0],
-                    'Available' => true,
-                    'Name' => html_entity_decode($row[3]),
-                    'Price' => $row[6],
-                    'CurrencyID' => 'PLN',
-                    'CategoryID' => $row[17] ?? null,
-                    'Pictures' => [],
-                    'Pickup' => false,
-                    'Delivery' => true,
-                    'Description' => ['Value' => $row[5]],
+                    //'Available' => true,
+                    'name' => html_entity_decode($row[3]),
+                    'price' => $row[6],
+                    'currencyID' => 'PLN',
+                    'categoryID' => $row[17] ?? null,
+                    'pictures' => [],
+                    'pickup' => "false",
+                    'delivery' => "true",
+                    'description' => '<![CDATA[ ' . $row[5]. ']]>',
                 ];
 
                 if (!empty($row[13])) {
@@ -201,24 +205,23 @@ class XmlFileController extends Controller
                     foreach ($imageUrls as $imageUrl) {
                         $imageUrl = trim($imageUrl);
                         if (!empty($imageUrl)) {
-                            $offer['Pictures'][] = ['Value' => $imageUrl];
+                            $offer['pictures'][] = ['picture' => $imageUrl];
                         }
                     }
                 }
 
                 if (!empty($row[1]) && $row[1] !== "NULL") {
-                    $offer['Barcode'] = $row[1];
+                    $offer['barcode'] = $row[1];
                 }
 
                 if (!empty($row[7]) && $row[7] !== "NULL") {
-                    $offer['Oldprice'] = $row[7];
+                    $offer['oldprice'] = $row[7];
                 }
 
                 if (!empty($row[18]) && $row[18] !== "NULL") {
-                    $offer['Vendor'] = $row[18];
+                    $offer['vendor'] = $row[18];
                 }
 
-                $offer['Param'] = [];
                 if (!empty($row[29]) && $row[29] !== "NULL") {
                     $offer['Param'][] = [
                         'Name' => $row[27],
@@ -235,7 +238,7 @@ class XmlFileController extends Controller
                     ];
                 }
 
-                $shop['Offers'][] = ['offer' => $offer];
+                $shop['offers'][] = ['offer' => $offer];
             }
         } catch (\Exception $e) {
             // Обработка и вывод ошибки
@@ -267,15 +270,17 @@ class XmlFileController extends Controller
                 $category['ParentID'] = $row[3];
             }
 
+
+
             // Добавление категории в список категорий
-            $shop['Categories'][] = ['category' => $category];
+            $shop['categories'][] = ['category' => $category];
         }
 
-
+        $currentDateTime = date('Y-m-d H:i');
         $xmlData = '<?xml version="1.0" encoding="utf-8"?>' . "\n";
-        $xmlData .= '<root>' . "\n";
+        $xmlData .= '<yml_catalog date="'.$currentDateTime.'"><shop>' . "\n";
         $xmlData .= $this->arrayToXml($shop, 1);
-        $xmlData .= '</root>' . "\n";
+        $xmlData .= '</shop></yml_catalog>' . "\n";
 
         return $xmlData;
     }
@@ -288,26 +293,64 @@ class XmlFileController extends Controller
 
         foreach ($array as $key => $value) {
             if (is_array($value)) {
+
+                // Up
                 if (!is_numeric($key)) {
-                    if($key == "offer"){
-                        $xml .= $indentation . "<$key id=\"".$value['ID']."\"> \n";
+
+
+                    // Pictures
+                    if($key == "picture"){
+                        $xml .= $indentation . "<$key>" . $value . "</$key>\n";
+                        continue;
                     }
+
+                    // Если категория, тогда все делаем в одной строке! Без middle и down
+                    if($key == "category"){
+                        $xml .= $indentation . "<$key id=\"".$value['ID']."\">".$value['Name']."</$key> \n";
+                        continue;
+                    }
+
+                    // Если валюта, тогда все делаем в одной строке! Без middle и down
+                    if($key == "currency"){
+                        $xml .= $indentation . "<$key id=\"".$value['ID']."\" rate=\"".$value['Rate']."\"></$key> \n";
+                        continue;
+                    }
+
+                    // Если оффер, тогда добавляем параметр в тег
+                    if($key == "offer"){
+                        $xml .= $indentation . "<$key id=\"".$value['ID']."\" available=\"true\"> \n";
+                    }
+
                     else{
                         $xml .= $indentation . "<$key>\n";
                     }
                 }
+
                 $xml .= $this->arrayToXml($value, $level + 1);
+
                 if (!is_numeric($key)) {
                     $xml .= $indentation . "</$key>\n";
                 }
 
-
             } else {
-                $xml .= $indentation . "<$key>" . htmlspecialchars($value) . "</$key>\n";
+
+                // Pictures
+                if($key == "ID"){
+                   continue;
+                }
+
+                // htmlspecialchars for name
+                if($key === "Name"){
+                    $xml .= $indentation . "<$key>" . htmlspecialchars($value) . "</$key>\n";
+                }
+
+                // other
+                else{
+                    $xml .= $indentation . "<$key>" . $value . "</$key>\n";
+                }
+
             }
         }
-
-
         return $xml;
     }
 
