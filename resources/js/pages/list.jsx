@@ -1,8 +1,8 @@
-import React, { useState } from 'react';
-import {InertiaLink} from '@inertiajs/inertia-react';
-import { format } from 'date-fns';
-import { Inertia } from '@inertiajs/inertia'
-import { Helmet } from 'react-helmet';
+import React, {useState} from 'react';
+import {Head, InertiaLink} from '@inertiajs/inertia-react';
+import {format} from 'date-fns';
+import {Inertia} from '@inertiajs/inertia'
+import {Helmet} from 'react-helmet';
 
 const List = ({xmlFiles}) => {
 
@@ -11,6 +11,18 @@ const List = ({xmlFiles}) => {
     const [searchString, ssetSarchString] = useState('');
     const [perPage, setperPage] = useState(10);
     const [page, setPage] = useState(1);
+
+
+    const handleDelete = (id) => {
+        if (window.confirm('Are you sure you want to delete this file?')) {
+            Inertia.post(`/delete/${id}`, {}, {
+                onSuccess: () => {
+                    // Обновите список после успешного удаления
+                    Inertia.reload();
+                },
+            });
+        }
+    }
 
     const sortBy = (column) => {
         let order = 'asc';
@@ -95,75 +107,171 @@ const List = ({xmlFiles}) => {
                 />
 
             </Helmet>
-            <div style={{ display: 'flex', justifyContent: 'space-between' }}>
-                <input type="text" placeholder="Search..." onKeyDown={search} />
+
+            <Head>
+                <style>{`
+                .custom-edit-button,
+                .custom-delete-button,
+                .link-button
+                {
+                    font-size:10px;
+                    padding: 3px 8px;
+                    margin-right: 5px;
+                    min - height: 38px;
+                }
+                 `}</style>
+            </Head>
+
+
+            <div style={{display: 'flex', justifyContent: 'space-between'}}>
+                <input type="text" placeholder="Search..." onKeyDown={search}/>
                 <select onChange={changePerPage} value={xmlFiles.per_page}>
                     <option value="10">10 per page</option>
                     <option value="25">25 per page</option>
                     <option value="50">50 per page</option>
                     <option value="100">100 per page</option>
-                    <option value="200">200 per page</option> {/* Добавили опцию для 40 элементов на странице */}
+                    <option value="200">200 per page</option>
+                    {/* Добавили опцию для 40 элементов на странице */}
                 </select>
             </div>
             <h1>XML Files List</h1>
-            <table><tr>
-                <td colSpan="6" style={{ textAlign: 'center' }}>
-                    {xmlFiles.links.length > 0 && (
-                        <ul className="pagination">
-                            {xmlFiles.links.map((link, key) => (
-                                <li key={key} className={`page-item ${link.active ? 'active' : ''}`}>
-                                    {link.label !== "..." ? (
-                                        <p onClick={() => changePage(link.url.match(/page=(\d+)/)?.[1])} className="page-link">
-                                            {link.label.replace(/&laquo;/g, '').replace(/&raquo;/g, '')}
-                                        </p>
-                                    ) :
-                                        <p className="page-link">
-                                            ...
-                                        </p>
-                                    }
-                                </li>
-                            ))}
-                        </ul>
-                    )}
-                </td>
-            </tr></table>
+            <table>
+                <tr>
+                    <td colSpan="6" style={{textAlign: 'center'}}>
+                        {xmlFiles.links.length > 0 && (
+                            <ul className="pagination">
+                                {xmlFiles.links.map((link, key) => (
+                                    <li key={key} className={`page-item ${link.active ? 'active' : ''}`}>
+                                        {link.label !== "..." ? (
+                                                <p onClick={() => changePage(link.url.match(/page=(\d+)/)?.[1])}
+                                                   className="page-link">
+                                                    {link.label.replace(/&laquo;/g, '').replace(/&raquo;/g, '')}
+                                                </p>
+                                            ) :
+                                            <p className="page-link">
+                                                ...
+                                            </p>
+                                        }
+                                    </li>
+                                ))}
+                            </ul>
+                        )}
+                    </td>
+                </tr>
+            </table>
 
 
-            <table style={{ width: '100%', borderCollapse: 'collapse' }}>
+            <table style={{width: '100%', borderCollapse: 'collapse'}}>
                 <thead>
                 <tr>
-                    <th onClick={() => sortBy('id')} style={{ cursor: 'pointer', padding: '8px', border: '1px solid #ddd', backgroundColor: '#f2f2f2', fontWeight: 'bold', textAlign: 'left' }}>ID</th>
-                    <th onClick={() => sortBy('shop_name')} style={{ cursor: 'pointer', padding: '8px', border: '1px solid #ddd', backgroundColor: '#f2f2f2', fontWeight: 'bold', textAlign: 'left' }}>Shop name</th>
-                    <th onClick={() => sortBy('shop_link')} style={{ cursor: 'pointer', padding: '8px', border: '1px solid #ddd', backgroundColor: '#f2f2f2', fontWeight: 'bold', textAlign: 'left' }}>Shop Link</th>
-                    <th onClick={() => sortBy('uploadDateTime')} style={{ cursor: 'pointer', padding: '8px', border: '1px solid #ddd', backgroundColor: '#f2f2f2', fontWeight: 'bold', textAlign: 'left' }}>Date upload</th>
-                    <th onClick={() => sortBy('lastCheckDateTime')} style={{ cursor: 'pointer', padding: '8px', border: '1px solid #ddd', backgroundColor: '#f2f2f2', fontWeight: 'bold', textAlign: 'left' }}>Last check</th>
-                    <th style={{ padding: '8px', border: '1px solid #ddd', backgroundColor: '#f2f2f2', fontWeight: 'bold', textAlign: 'left' }}>Link</th>
+                    <th onClick={() => sortBy('id')} style={{
+                        cursor: 'pointer',
+                        padding: '8px',
+                        border: '1px solid #ddd',
+                        backgroundColor: '#f2f2f2',
+                        fontWeight: 'bold',
+                        textAlign: 'left'
+                    }}>ID
+                    </th>
+                    <th onClick={() => sortBy('shop_name')} style={{
+                        cursor: 'pointer',
+                        padding: '8px',
+                        border: '1px solid #ddd',
+                        backgroundColor: '#f2f2f2',
+                        fontWeight: 'bold',
+                        textAlign: 'left'
+                    }}>Shop name
+                    </th>
+                    <th onClick={() => sortBy('shop_link')} style={{
+                        cursor: 'pointer',
+                        padding: '8px',
+                        border: '1px solid #ddd',
+                        backgroundColor: '#f2f2f2',
+                        fontWeight: 'bold',
+                        textAlign: 'left'
+                    }}>Shop Link
+                    </th>
+                    <th onClick={() => sortBy('uploadDateTime')} style={{
+                        cursor: 'pointer',
+                        padding: '8px',
+                        border: '1px solid #ddd',
+                        backgroundColor: '#f2f2f2',
+                        fontWeight: 'bold',
+                        textAlign: 'left'
+                    }}>Date upload
+                    </th>
+                    <th onClick={() => sortBy('')} style={{
+                        cursor: 'pointer',
+                        padding: '8px',
+                        border: '1px solid #ddd',
+                        backgroundColor: '#f2f2f2',
+                        fontWeight: 'bold',
+                        textAlign: 'left'
+                    }}>Last update
+                    </th>
+                    <th style={{
+                        padding: '8px',
+                        border: '1px solid #ddd',
+                        backgroundColor: '#f2f2f2',
+                        fontWeight: 'bold',
+                        textAlign: 'left'
+                    }}>Link
+                    </th>
+                    <th style={{
+                        padding: '8px',
+                        border: '1px solid #ddd',
+                        backgroundColor: '#f2f2f2',
+                        fontWeight: 'bold',
+                        textAlign: 'left'
+                    }}>Edit
+                    </th>
                 </tr>
                 </thead>
                 <tbody>
                 {xmlFiles.data.map((xmlFile) => (
 
                     <tr key={xmlFile.id}>
-                        <td style={{ padding: '8px', border: '1px solid #ddd' }}>{xmlFile.id}</td>
-                        <td style={{ padding: '8px', border: '1px solid #ddd' }}>{xmlFile.shop_name}</td>
-                        <td style={{ padding: '8px', border: '1px solid #ddd' }}><a href={xmlFile.shop_link} target="_blank">{xmlFile.shop_link}</a></td>
-                        <td style={{ padding: '8px', border: '1px solid #ddd' }}>{format(new Date(xmlFile.created_at), 'dd.MM.yyyy HH:mm:ss')}</td>
-                        <td style={{ padding: '8px', border: '1px solid #ddd' }}>{format(new Date(xmlFile.lastCheckDateTime), 'dd.MM.yyyy HH:mm:ss')}</td>
-                        <td style={{ padding: '8px', border: '1px solid #ddd' }}><a href={`/api/show/${xmlFile.id}`} target="_blank">Link</a></td>
+                        <td style={{padding: '8px', border: '1px solid #ddd'}}>{xmlFile.id}</td>
+                        <td style={{padding: '8px', border: '1px solid #ddd'}}>{xmlFile.shop_name}</td>
+                        <td style={{padding: '8px', border: '1px solid #ddd'}}><a href={xmlFile.shop_link}
+                                                                                  target="_blank">{xmlFile.shop_link}</a>
+                        </td>
+                        <td style={{
+                            padding: '8px',
+                            border: '1px solid #ddd'
+                        }}>{format(new Date(xmlFile.created_at), 'dd.MM.yyyy HH:mm:ss')}</td>
 
+                        {/*<td style={{ padding: '8px', border: '1px solid #ddd' }}>{format(new Date(xmlFile.lastCheckDateTime), 'dd.MM.yyyy HH:mm:ss')}</td>*/}
+
+                        <td style={{ padding: '8px', border: '1px solid #ddd' }}></td>
+
+
+                        <td style={{padding: '8px', border: '1px solid #ddd'}}><a className="btn btn-success link-button" href={`/api/show/${xmlFile.id}`}
+                                                                                  target="_blank">Link</a></td>
+
+
+                        <td style={{padding: '8px', border: '1px solid #ddd'}}>
+                            <button className="btn btn-primary edit-button custom-edit-button">
+                                Edit
+                            </button>
+                            <button className="btn btn-danger delete-button custom-delete-button" onClick={() => handleDelete(xmlFile.id)}>
+                                Delete
+                            </button>
+                        </td>
                     </tr>
                 ))}
                 </tbody>
                 <tfoot>
                 <tr>
-                    <td colSpan="6" style={{ textAlign: 'center' }}>
+                    <td colSpan="6" style={{textAlign: 'center'}}>
                         <br></br>
                         {xmlFiles.links.length > 0 && (
                             <ul className="pagination">
                                 {xmlFiles.links.map((link, key) => (
                                     <li key={key} className={`page-item ${link.active ? 'active' : ''}`}>
                                         {link.label !== "..." ? (
-                                                <p onClick={() => changePage(link.url.match(/page=(\d+)/)?.[1])} className="page-link">
+                                                <p onClick={() => changePage(link.url.match(/page=(\d+)/)?.[1])}
+                                                   className="page-link">
                                                     {link.label.replace(/&laquo;/g, '').replace(/&raquo;/g, '')}
                                                 </p>
                                             ) :

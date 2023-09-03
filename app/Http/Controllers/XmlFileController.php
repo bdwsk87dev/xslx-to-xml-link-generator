@@ -190,10 +190,10 @@ class XmlFileController extends Controller
                 $offer = [
                     'ID' => $row[0],
                     //'Available' => true,
-                    'name' => html_entity_decode($row[3]),
+                    'name' => htmlspecialchars($row[3]),
                     'price' => $row[6],
-                    'currencyID' => 'PLN',
-                    'categoryID' => $row[17] ?? null,
+                    'currencyId' => 'PLN',
+                    'categoryId' => $row[17] ?? null,
                     'pictures' => [],
                     'pickup' => "false",
                     'delivery' => "true",
@@ -235,6 +235,72 @@ class XmlFileController extends Controller
                         'Name' => $row[30],
                         'Unit' => '',
                         'Value' => $row[32],
+                    ];
+                }
+
+
+                if (!empty($row[35]) && $row[35] !== "NULL") {
+                    $offer['Param'][] = [
+                        'Name' => $row[33],
+                        'Unit' => '',
+                        'Value' => $row[35],
+                    ];
+                }
+
+                if (!empty($row[38]) && $row[38] !== "NULL") {
+                    $offer['Param'][] = [
+                        'Name' => $row[36],
+                        'Unit' => '',
+                        'Value' => $row[38],
+                    ];
+                }
+
+
+                if (!empty($row[41]) && $row[41] !== "NULL") {
+                    $offer['Param'][] = [
+                        'Name' => $row[39],
+                        'Unit' => '',
+                        'Value' => $row[41],
+                    ];
+                }
+
+                if (!empty($row[44]) && $row[44] !== "NULL") {
+                    $offer['Param'][] = [
+                        'Name' => $row[42],
+                        'Unit' => '',
+                        'Value' => $row[44],
+                    ];
+                }
+
+                if (!empty($row[47]) && $row[47] !== "NULL") {
+                    $offer['Param'][] = [
+                        'Name' => $row[45],
+                        'Unit' => '',
+                        'Value' => $row[47],
+                    ];
+                }
+
+                if (!empty($row[50]) && $row[50] !== "NULL") {
+                    $offer['Param'][] = [
+                        'Name' => $row[48],
+                        'Unit' => '',
+                        'Value' => $row[50],
+                    ];
+                }
+
+                if (!empty($row[53]) && $row[53] !== "NULL") {
+                    $offer['Param'][] = [
+                        'Name' => $row[51],
+                        'Unit' => '',
+                        'Value' => $row[53],
+                    ];
+                }
+
+                if (!empty($row[56]) && $row[56] !== "NULL") {
+                    $offer['Param'][] = [
+                        'Name' => $row[54],
+                        'Unit' => '',
+                        'Value' => $row[56],
                     ];
                 }
 
@@ -295,7 +361,6 @@ class XmlFileController extends Controller
                 // Up
                 if (!is_numeric($key)) {
 
-
                     // Pictures
                     if($key == "picture"){
                         $xml .= $indentation . "<$key>" . $value . "</$key>\n";
@@ -304,7 +369,12 @@ class XmlFileController extends Controller
 
                     // Если категория, тогда все делаем в одной строке! Без middle и down
                     if($key == "category"){
-                        $xml .= $indentation . "<$key id=\"".$value['ID']."\">".$value['Name']."</$key> \n";
+                        $xml .= $indentation . "<$key id=\"".$value['ID']."\"";
+                        if (isset($value['ParentID'])){
+                        $xml .= " parentId=\"".$value['ParentID']."\"";
+                        }
+
+                        $xml .=">".$value['Name']."</$key> \n";
                         continue;
                     }
 
@@ -320,14 +390,18 @@ class XmlFileController extends Controller
                     }
 
                     else{
-                        $xml .= $indentation . "<$key>\n";
+                        if($key!="pictures") {
+                            $xml .= $indentation . "<$key>\n";
+                        }
                     }
                 }
 
                 $xml .= $this->arrayToXml($value, $level + 1);
 
                 if (!is_numeric($key)) {
-                    $xml .= $indentation . "</$key>\n";
+                    if($key!="pictures") {
+                        $xml .= $indentation . "</$key>\n";
+                    }
                 }
 
             } else {
@@ -368,6 +442,19 @@ class XmlFileController extends Controller
         }
 
         return implode('', $digits);
+    }
+
+    public function delete($id)
+    {
+        $xmlFile = XmlFile::findOrFail($id);
+
+        // Удалите файл с сервера
+        Storage::disk('public')->delete('uploads/' . $xmlFile->filename);
+
+        // Удалите запись из базы данных
+        $xmlFile->delete();
+
+        return redirect()->back()->with('success', 'File and record deleted successfully.');
     }
 
 }

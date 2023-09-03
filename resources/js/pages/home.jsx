@@ -6,7 +6,7 @@ const Home = ({ xmlFiles }) => {
     const [file, setFile] = useState(null);
     const [shopName, setShopName] = useState('');
     const [shopLink, setShopLink] = useState('');
-    const [uploadType, setUploadType] = useState('xml');
+    const [uploadType, setUploadType] = useState('xlsx');
 
     const handleSubmit = (e) => {
         e.preventDefault();
@@ -43,8 +43,50 @@ const Home = ({ xmlFiles }) => {
                         margin-top: 20px;
                     }
 
-                    .home-upload-type-select{
-                    padding: 10px;
+                    .home-upload-type-select {
+                        padding: 10px;
+                        width: 245px;
+                    }
+
+                    input[type="file"] {
+                        padding: 10px;
+                        margin: 10px 0;
+                        border: 1px solid #ccc;
+                        border-radius: 5px;
+                    }
+
+                    input[type="text"] {
+                        padding: 10px;
+                        margin: 5px 0;
+                        border: 1px solid #ccc;
+                        border-radius: 5px;
+                        width: 200px;
+                    }
+
+                    select {
+                        padding: 10px;
+                        margin: 5px 0;
+                        border: 1px solid #ccc;
+                        border-radius: 5px;
+                        width: 200px;
+                    }
+
+                    button {
+                        padding: 10px 20px;
+                        margin-top: 10px;
+                        background-color: #007bff;
+                        color: #fff;
+                        border: none;
+                        border-radius: 5px;
+                        cursor: pointer;
+                    }
+
+                    button:hover {
+                        background-color: #0056b3;
+                    }
+
+                    p {
+                        margin: 5px 0;
                     }
                 `}</style>
             </Head>
@@ -57,8 +99,8 @@ const Home = ({ xmlFiles }) => {
                 <form className="upload-form" encType="multipart/form-data" onSubmit={handleSubmit}>
 
                     <select className="home-upload-type-select" value={uploadType} onChange={(e) => setUploadType(e.target.value)}>
-                        <option value="xlsx">upload and conver xslx file</option>
-                        <option value="xml">only upload xml file</option>
+                        <option value="xlsx" selected>Upload and convert xlsx file</option>
+                        <option value="xml">Only upload xml file</option>
                     </select>
 
                     <br />
