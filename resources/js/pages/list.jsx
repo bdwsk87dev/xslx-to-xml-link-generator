@@ -4,6 +4,8 @@ import {format} from 'date-fns';
 import {Inertia} from '@inertiajs/inertia'
 import {Helmet} from 'react-helmet';
 
+import EditForm from '../forms/EditForm'; // Import the EditForm component
+
 const List = ({xmlFiles}) => {
 
     const [sortColumn, setSortColumn] = useState(null);
@@ -11,7 +13,23 @@ const List = ({xmlFiles}) => {
     const [searchString, ssetSarchString] = useState('');
     const [perPage, setperPage] = useState(10);
     const [page, setPage] = useState(1);
+    const [editingProductId, setEditingProductId] = useState(null); // Track the editing product ID
+    const [isEditFormOpen, setIsEditFormOpen] = useState(false);
 
+    const openEditForm = () => {
+        setIsEditFormOpen(true);
+    };
+
+    const closeEditForm = () => {
+        setIsEditFormOpen(false);
+    };
+
+
+    // Handle the "Edit" button click
+    const handleEdit = (id) => {
+        openEditForm(id);
+        setEditingProductId(id); // Set the editing product ID when the "Edit" button is clicked
+    };
 
     const handleDelete = (id) => {
         if (window.confirm('Are you sure you want to delete this file?')) {
@@ -119,6 +137,33 @@ const List = ({xmlFiles}) => {
                     margin-right: 5px;
                     min - height: 38px;
                 }
+
+                .modal-background {
+                    position: fixed;
+                    top: 0;
+                    left: 0;
+                    width: 100%;
+                    height: 100%;
+                    background: rgba(0, 0, 0, 0.5);
+                    display: flex;
+                    justify-content: center;
+                    align-items: center;
+                }
+
+           .modal {
+  position: relative; /* Изменено на relative */
+  z-index: 9999;
+  background: white;
+  padding: 20px;
+  border-radius: 8px;
+  box-shadow: 0px 0px 10px rgba(0, 0, 0, 0.2);
+  text-align: center;
+  display: block; /* Отображаем окно */
+  width: 80%; /* Ширина окна */
+  height:60%;
+  max-width: 400px; /* Максимальная ширина окна */
+}
+
                  `}</style>
             </Head>
 
@@ -251,7 +296,7 @@ const List = ({xmlFiles}) => {
 
 
                         <td style={{padding: '8px', border: '1px solid #ddd'}}>
-                            <button className="btn btn-primary edit-button custom-edit-button">
+                            <button className="btn btn-primary edit-button custom-edit-button" onClick={() => handleEdit(xmlFile.id)}>
                                 Edit
                             </button>
                             <button className="btn btn-danger delete-button custom-delete-button" onClick={() => handleDelete(xmlFile.id)}>
@@ -287,6 +332,9 @@ const List = ({xmlFiles}) => {
                 </tr>
                 </tfoot>
             </table>
+
+            {isEditFormOpen && <EditForm productId={editingProductId} onClose={closeEditForm} />}
+
         </div>
     );
 };
