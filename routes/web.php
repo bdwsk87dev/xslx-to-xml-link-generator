@@ -21,6 +21,10 @@ Route::middleware(['auth'])->group(function () {
     })->name('home');
 
     Route::post('/api/upload', [XmlFileController::class, 'upload'])->name('xml.upload');
+
+    Route::get('/api/show/{id}', [XmlFileController::class, 'show'])->name('xml.show');
+
+    Route::get('/list', [XmlFileController::class, 'index'])->name('xml.list');
 });
 
 Route::middleware(['guest'])->group(function () {
@@ -38,9 +42,8 @@ Route::middleware(['guest'])->group(function () {
     Route::post('/register', [AuthController::class, 'register']);
 });
 
-Route::get('/list', [XmlFileController::class, 'index'])->name('xml.list')->middleware('web');
+//Route::get('/list', [XmlFileController::class, 'index'])->name('xml.list')->middleware('web');
 
-Route::get('/api/show/{id}', [XmlFileController::class, 'show'])->name('xml.show')->middleware('api');
 
 Route::get('/downloadApk', function () {
 

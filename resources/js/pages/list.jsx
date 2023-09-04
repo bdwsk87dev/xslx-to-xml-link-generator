@@ -150,37 +150,85 @@ const List = ({xmlFiles}) => {
                     align-items: center;
                 }
 
-           .modal {
-  position: relative; /* Изменено на relative */
-  z-index: 9999;
-  background: white;
-  padding: 20px;
-  border-radius: 8px;
-  box-shadow: 0px 0px 10px rgba(0, 0, 0, 0.2);
-  text-align: center;
-  display: block; /* Отображаем окно */
-  width: 80%; /* Ширина окна */
-  height:60%;
-  max-width: 400px; /* Максимальная ширина окна */
-}
+               .modal {
+                  position: relative; /* Изменено на relative */
+                  z-index: 9999;
+                  background: white;
+                  padding: 20px;
+                  border-radius: 8px;
+                  box-shadow: 0px 0px 10px rgba(0, 0, 0, 0.2);
+                  text-align: center;
+                  display: block; /* Отображаем окно */
+                  width: 80%; /* Ширина окна */
+                  height:60%;
+                  max-width: 400px; /* Максимальная ширина окна */
+                }
 
-input, select {
-  padding: 8px;
-  margin: 5px 0;
-  border: 1px solid #ccc;
-  border-radius: 4px;
-  box-sizing: border-box;
-  font-size: 14px;
-}
+                input, select {
+                  padding: 8px;
+                  margin: 5px 0;
+                  border: 1px solid #ccc;
+                  border-radius: 4px;
+                  box-sizing: border-box;
+                  font-size: 14px;
+                }
 
-select:hover {
-cursor:pointer;
-}
+                select:hover {
+                cursor:pointer;
+                }
 
-.pagination li:hover{
-cursor:pointer;
-}
+                .pagination li:hover{
+                cursor:pointer;
+                }
 
+                .modal h2 {
+                    font-size: 24px;
+                    margin-bottom: 20px;
+                }
+
+                .modal label {
+                    display: block;
+                    margin-bottom: 10px;
+                    font-weight: bold;
+                }
+
+                .modal input[type="text"],
+                .modal input[type="file"],
+                .modal button {
+                    width: 100%;
+                    padding: 10px;
+                    margin-bottom: 15px;
+                    border: 1px solid #ccc;
+                    border-radius: 4px;
+                    font-size: 16px;
+                }
+
+                .modal input[type="checkbox"] {
+                    margin-right: 5px;
+                }
+
+                .modal button[type="submit"] {
+                    background-color: #007bff;
+                    color: white;
+                    cursor: pointer;
+                }
+
+                .modal button[type="submit"]:hover {
+                    background-color: #0056b3;
+                }
+
+                .modal button {
+                    background-color: #ccc;
+                    color: white;
+                    cursor: pointer;
+                }
+
+                .modal button:hover {
+                    background-color: #999;
+                }
+                .modal checkbox{
+                    margin-left:10px;
+                }
                  `}</style>
             </Head>
 
@@ -244,7 +292,7 @@ cursor:pointer;
                         backgroundColor: '#f2f2f2',
                         fontWeight: 'bold',
                         textAlign: 'left'
-                    }}>Shop name
+                    }}>Назва магазину
                     </th>
                     <th onClick={() => sortBy('shop_link')} style={{
                         cursor: 'pointer',
@@ -253,7 +301,7 @@ cursor:pointer;
                         backgroundColor: '#f2f2f2',
                         fontWeight: 'bold',
                         textAlign: 'left'
-                    }}>Shop Link
+                    }}>Лінк на магазин
                     </th>
                     <th onClick={() => sortBy('uploadDateTime')} style={{
                         cursor: 'pointer',
@@ -262,7 +310,7 @@ cursor:pointer;
                         backgroundColor: '#f2f2f2',
                         fontWeight: 'bold',
                         textAlign: 'left'
-                    }}>Date upload
+                    }}>Дата завантаження
                     </th>
                     <th onClick={() => sortBy('')} style={{
                         cursor: 'pointer',
@@ -271,7 +319,7 @@ cursor:pointer;
                         backgroundColor: '#f2f2f2',
                         fontWeight: 'bold',
                         textAlign: 'left'
-                    }}>Last update
+                    }}>Остання дата редагування
                     </th>
                     <th style={{
                         padding: '8px',
@@ -279,7 +327,7 @@ cursor:pointer;
                         backgroundColor: '#f2f2f2',
                         fontWeight: 'bold',
                         textAlign: 'left'
-                    }}>Link
+                    }}>Лінк на xml
                     </th>
                     <th style={{
                         padding: '8px',
@@ -287,7 +335,7 @@ cursor:pointer;
                         backgroundColor: '#f2f2f2',
                         fontWeight: 'bold',
                         textAlign: 'left'
-                    }}>Edit
+                    }}>Редагування
                     </th>
                 </tr>
                 </thead>
@@ -311,15 +359,15 @@ cursor:pointer;
 
 
                         <td style={{padding: '8px', border: '1px solid #ddd'}}><a className="btn btn-success link-button" href={`/api/show/${xmlFile.id}`}
-                                                                                  target="_blank">Link</a></td>
+                                                                                  target="_blank">Лінк</a></td>
 
 
                         <td style={{padding: '8px', border: '1px solid #ddd'}}>
                             <button className="btn btn-primary edit-button custom-edit-button" onClick={() => handleEdit(xmlFile.id)}>
-                                Edit
+                                Редагувати
                             </button>
                             <button className="btn btn-danger delete-button custom-delete-button" onClick={() => handleDelete(xmlFile.id)}>
-                                Delete
+                                Видалити
                             </button>
                         </td>
                     </tr>
