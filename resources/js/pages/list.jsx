@@ -164,10 +164,27 @@ const List = ({xmlFiles}) => {
   max-width: 400px; /* Максимальная ширина окна */
 }
 
+input, select {
+  padding: 8px;
+  margin: 5px 0;
+  border: 1px solid #ccc;
+  border-radius: 4px;
+  box-sizing: border-box;
+  font-size: 14px;
+}
+
+select:hover {
+cursor:pointer;
+}
+
+.pagination li:hover{
+cursor:pointer;
+}
+
                  `}</style>
             </Head>
 
-
+            <h1>XML Files List</h1>
             <div style={{display: 'flex', justifyContent: 'space-between'}}>
                 <input type="text" placeholder="Search..." onKeyDown={search}/>
                 <select onChange={changePerPage} value={xmlFiles.per_page}>
@@ -179,7 +196,9 @@ const List = ({xmlFiles}) => {
                     {/* Добавили опцию для 40 элементов на странице */}
                 </select>
             </div>
-            <h1>XML Files List</h1>
+
+            <br/>
+
             <table>
                 <tr>
                     <td colSpan="6" style={{textAlign: 'center'}}>
