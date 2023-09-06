@@ -9,6 +9,7 @@ use PhpOffice\PhpSpreadsheet\IOFactory;
 use Illuminate\Support\Facades\Storage;
 use Illuminate\Support\Facades\File;
 use Illuminate\Support\Facades\Response;
+use SimpleXMLElement;
 
 class XmlFileController extends Controller
 
@@ -99,8 +100,76 @@ class XmlFileController extends Controller
         // Сохраняем изменения
         $xmlFile->save();
 
+        /*
+         * Получим ссылку на файл (файл был загружен ранее!)
+         */
+
+        $fileUrl = null;
+        if (!empty($xmlFile->filename)) {
+            $xmlFilePath = Storage::disk('public')->path('uploads/' . $xmlFile->filename);
+            $categories = $this->readCategoriesFromXmlFile($xmlFilePath);
+            print_r($categories);
+        }
 
     }
+
+    public function readCategoriesFromXmlFile($xmlFilePath)
+    {
+        $categories = [];
+
+        // Проверяем, существует ли файл по указанному URL
+        if (file_exists($xmlFilePath)) {
+            $xmlData = file_get_contents($xmlFilePath);
+
+            // Создаем объект SimpleXMLElement из данных XML
+            $xml = new SimpleXMLElement($xmlData);
+
+            // Получаем корневой элемент <shop>
+            $shopElement = $xml->shop;
+
+            // Получаем элемент <categories> внутри корневого элемента <shop>
+            $categoriesElement = $shopElement->categories;
+
+            // Перебираем категории внутри элемента <categories>
+            foreach ($categoriesElement->category as $category) {
+                $categoryId = (int)$category['id'];
+                $categoryName = (string)$category;
+
+                // Добавляем категорию в массив
+                $categories[] = [
+                    'ID' => $categoryId,
+                    'Name' => $categoryName,
+                ];
+            }
+        }
+
+        return $categories;
+    }
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
 
     public function upload(Request $request)
     {
