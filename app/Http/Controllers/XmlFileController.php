@@ -88,6 +88,18 @@ class XmlFileController extends Controller
         print_r($allowNewProducts." | ");
         print_r($fileName." | ");
 
+
+        // Найдем запись по id
+        $xmlFile = XmlFile::find($productId);
+
+        // Обновим нужные поля
+        $xmlFile->shop_name = $shopName;
+        $xmlFile->shop_link = $shopLink;
+
+        // Сохраняем изменения
+        $xmlFile->save();
+
+
     }
 
     public function upload(Request $request)
