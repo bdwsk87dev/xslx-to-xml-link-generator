@@ -3,7 +3,7 @@ import axios from 'axios';
 
 const EditForm = ({ productId, onClose }) => {
     const [formData, setFormData] = useState({
-        productId: '',
+        productId: productId,
         shop_name: '',
         shop_link: '',
         uploadNewXLS: false,
@@ -65,12 +65,6 @@ const EditForm = ({ productId, onClose }) => {
                 <p>ID: {productId}</p>
                 <form onSubmit={handleSubmit}>
                     <div>
-                        <input
-                            type="hidden"
-                            name="productId"
-                            value={formData.productId}
-                            onChange={handleChange}
-                        />
                         <label>
                             Назва магазину
                             <input
