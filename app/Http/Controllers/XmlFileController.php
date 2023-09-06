@@ -62,6 +62,34 @@ class XmlFileController extends Controller
         return inertia('home', compact('xmlFiles'));
     }
 
+    public function edit(Request $request)
+    {
+        $fileName = "";
+        $productId = $request->input('productId');
+        $shopName = $request->input('shop_name');
+        $shopLink = $request->input('shop_link');
+        $uploadNewXLS = $request->input('uploadNewXLS');
+        $deleteProducts = $request->input('deleteProducts');
+        $allowNewProducts = $request->input('allowNewProducts');
+
+        if ($request->hasFile('filename')) {
+            $file = $request->file('filename');
+            $fileName = $file->getClientOriginalName();
+
+            // Теперь вы можете сохранить файл в нужное место
+            // $file->storeAs('your_directory', $fileName); // Замените 'your_directory' на путь к папке, куда нужно сохранить файл
+        }
+
+        print_r($productId." | ");
+        print_r($shopName." | ");
+        print_r($shopLink." | ");
+        print_r($uploadNewXLS." | ");
+        print_r($deleteProducts." | ");
+        print_r($allowNewProducts." | ");
+        print_r($fileName." | ");
+
+    }
+
     public function upload(Request $request)
     {
         $uploadType = $request->input('uploadType');

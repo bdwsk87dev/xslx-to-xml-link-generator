@@ -1,24 +1,61 @@
 import React, { useState } from 'react';
+import axios from 'axios';
 
 const EditForm = ({ productId, onClose }) => {
     const [formData, setFormData] = useState({
+        productId: '',
         shop_name: '',
         shop_link: '',
         uploadNewXLS: false,
         deleteProducts: false,
+        allowNewProducts: false,
         filename: '',
     });
 
-    const handleChange = (e) => {
-        const { name, value, type, checked } = e.target;
-        setFormData({
-            [name]: type === 'checkbox' ? checked : value,
-        });
+    const handleFileChange = (e) => {
+        const file = e.target.files[0];
+        setFormData((prevFormData) => ({
+            ...prevFormData,
+            filename: file,
+        }));
     };
 
-    const handleSubmit = (e) => {
+    const handleSubmit = async (e) => {
         e.preventDefault();
-        onClose();
+
+        try {
+            const formDataToSend = new FormData();
+            formDataToSend.append('productId', formData.productId);
+            formDataToSend.append('shop_name', formData.shop_name);
+            formDataToSend.append('shop_link', formData.shop_link);
+            formDataToSend.append('uploadNewXLS', formData.uploadNewXLS);
+            formDataToSend.append('deleteProducts', formData.deleteProducts);
+            formDataToSend.append('allowNewProducts', formData.allowNewProducts);
+            formDataToSend.append('filename', formData.filename);
+
+            const response = await axios.post('/api/edit', formDataToSend);
+            console.log('Ответ от сервера:', response.data);
+            onClose();
+        } catch (error) {
+            console.error('Произошла ошибка при отправке данных:', error);
+        }
+    };
+
+    const handleChange = (e) => {
+        const { name, type } = e.target;
+        const value = type === 'checkbox' ? e.target.checked : e.target.value;
+
+        if (name === 'filename') {
+            setFormData((prevFormData) => ({
+                ...prevFormData,
+                [name]: e.target.files[0],
+            }));
+        } else {
+            setFormData((prevFormData) => ({
+                ...prevFormData,
+                [name]: value,
+            }));
+        }
     };
 
     return (
@@ -28,6 +65,12 @@ const EditForm = ({ productId, onClose }) => {
                 <p>ID: {productId}</p>
                 <form onSubmit={handleSubmit}>
                     <div>
+                        <input
+                            type="hidden"
+                            name="productId"
+                            value={formData.productId}
+                            onChange={handleChange}
+                        />
                         <label>
                             Назва магазину
                             <input
@@ -68,7 +111,7 @@ const EditForm = ({ productId, onClose }) => {
                                 <input
                                     type="file"
                                     name="filename"
-                                    onChange={handleChange}
+                                    onChange={(e) => handleFileChange(e)}
                                 />
                             </label>
 
@@ -77,11 +120,21 @@ const EditForm = ({ productId, onClose }) => {
                             </select>
 
                             <label>
-                                Видалити товари яких немає ?
+                                Видалити товари яких немає?
                                 <input
                                     type="checkbox"
                                     name="deleteProducts"
                                     checked={formData.deleteProducts}
+                                    onChange={handleChange}
+                                />
+                            </label>
+
+                            <label>
+                                Додавати нові товари з нового файлу?
+                                <input
+                                    type="checkbox"
+                                    name="allowNewProducts"
+                                    checked={formData.allowNewProducts}
                                     onChange={handleChange}
                                 />
                             </label>
