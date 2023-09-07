@@ -253,8 +253,10 @@ class XmlFileController extends Controller
             if (!isset($existingProducts[$productId]) && $rowArray[0] !="") {
 
                 $offer = $xml->shop->offers->addChild('offer', '');
+                $offer->addAttribute('id', $rowArray[0]);
+                $offer->addAttribute('available', 'true');
 
-                $offer->addChild('ID', $rowArray[0]);
+                // $offer->addChild('ID', $rowArray[0]);
                 $offer->addChild('name', htmlspecialchars($rowArray[3]));
                 $offer->addChild('price', $rowArray[6]);
 
@@ -291,9 +293,53 @@ class XmlFileController extends Controller
                 }
 
                 if (!empty($rowArray[29]) && $rowArray[29] !== "NULL") {
-                    $param = $offer->addChild('Param', '');
-                    $param->addChild('Name', $rowArray[27]);
-                    $param->addChild('Value', $rowArray[29]);
+                    $param = $offer->addChild('Param', $rowArray[29]);
+                    $param->addAttribute('Name', $rowArray[27]);
+                }
+
+                if (!empty($rowArray[32]) && $rowArray[32] !== "NULL") {
+                    $param = $offer->addChild('Param', $rowArray[32]);
+                    $param->addAttribute('Name', $rowArray[30]);
+                }
+
+                if (!empty($rowArray[35]) && $rowArray[35] !== "NULL") {
+                    $param = $offer->addChild('Param', $rowArray[35]);
+                    $param->addAttribute('Name', $rowArray[33]);
+                }
+
+                if (!empty($rowArray[38]) && $rowArray[38] !== "NULL") {
+                    $param = $offer->addChild('Param', $rowArray[38]);
+                    $param->addAttribute('Name', $rowArray[36]);
+                }
+
+                if (!empty($rowArray[41]) && $rowArray[41] !== "NULL") {
+                    $param = $offer->addChild('Param', $rowArray[41]);
+                    $param->addAttribute('Name', $rowArray[39]);
+                }
+
+                if (!empty($rowArray[44]) && $rowArray[44] !== "NULL") {
+                    $param = $offer->addChild('Param', $rowArray[44]);
+                    $param->addAttribute('Name', $rowArray[42]);
+                }
+
+                if (!empty($rowArray[47]) && $rowArray[47] !== "NULL") {
+                    $param = $offer->addChild('Param', $rowArray[47]);
+                    $param->addAttribute('Name', $rowArray[45]);
+                }
+
+                if (!empty($rowArray[50]) && $rowArray[50] !== "NULL") {
+                    $param = $offer->addChild('Param', $rowArray[50]);
+                    $param->addAttribute('Name', $rowArray[48]);
+                }
+
+                if (!empty($rowArray[53]) && $rowArray[53] !== "NULL") {
+                    $param = $offer->addChild('Param', $rowArray[53]);
+                    $param->addAttribute('Name', $rowArray[51]);
+                }
+
+                if (!empty($rowArray[56]) && $rowArray[56] !== "NULL") {
+                    $param = $offer->addChild('Param', $rowArray[56]);
+                    $param->addAttribute('Name', $rowArray[54]);
                 }
             }
         }
@@ -617,9 +663,6 @@ class XmlFileController extends Controller
                     if($key == "offer"){
                         $xml .= $indentation . "<$key id=\"".$value['ID']."\" available=\"true\"> \n";
                     }
-
-
-
 
                     else{
                         if($key!="pictures" && $key!="params") {

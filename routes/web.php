@@ -32,9 +32,6 @@ Route::middleware(['auth'])->group(function () {
     Route::get('/get-completion-percentage', [XmlFileController::class, 'getCompletionPercentage']);
 });
 
-
-
-
 Route::middleware(['guest'])->group(function () {
 
     Route::get('/login', function () {
@@ -43,11 +40,11 @@ Route::middleware(['guest'])->group(function () {
 
     Route::post('/login', [AuthController::class, 'login']);
 
-    Route::get('/register', function () {
-        return Inertia::render('register');
-    })->name('register');
+//    Route::get('/register', function () {
+//        return Inertia::render('register');
+//    })->name('register');
 
-    Route::post('/register', [AuthController::class, 'register']);
+    //Route::post('/register', [AuthController::class, 'register']);
 });
 
 //Route::get('/list', [XmlFileController::class, 'index'])->name('xml.list')->middleware('web');
