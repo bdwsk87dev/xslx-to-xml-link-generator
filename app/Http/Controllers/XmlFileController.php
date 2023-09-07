@@ -77,6 +77,10 @@ class XmlFileController extends Controller
             $file = $request->file('filename');
             $fileName = $file->getClientOriginalName();
 
+            // Сохраняем файл во временной директории
+            $tempXlsxFilePath = tempnam(sys_get_temp_dir(), 'xlsx_');
+            $file->move(sys_get_temp_dir(), $tempXlsxFilePath);
+
             // Теперь вы можете сохранить файл в нужное место
             // $file->storeAs('your_directory', $fileName); // Замените 'your_directory' на путь к папке, куда нужно сохранить файл
         }
@@ -108,10 +112,13 @@ class XmlFileController extends Controller
         if (!empty($xmlFile->filename)) {
             $xmlFilePath = Storage::disk('public')->path('uploads/' . $xmlFile->filename);
             $categories = $this->readCategoriesFromXmlFile($xmlFilePath);
+            print_r("Categories : ");
             print_r($categories);
+            $this->updateXmlFileFromXlsx($xmlFilePath, $tempXlsxFilePath, $categories, $deleteProducts, $allowNewProducts);
         }
 
     }
+
 
     public function readCategoriesFromXmlFile($xmlFilePath)
     {
@@ -136,7 +143,7 @@ class XmlFileController extends Controller
                 $categoryName = (string)$category;
 
                 // Добавляем категорию в массив
-                $categories[] = [
+                $categories[$categoryId] = [
                     'ID' => $categoryId,
                     'Name' => $categoryName,
                 ];
@@ -147,29 +154,60 @@ class XmlFileController extends Controller
     }
 
 
+    public function updateXmlFileFromXlsx($xmlFilePath, $xlsxFilePath, $categories, $deleteProducts, $allowNewProducts)
+    {
+        // Шаг 1: Прочитать данные из xlsx файла
+        $data = [];
+        $spreadsheet = IOFactory::load($xlsxFilePath);
+        $worksheet = $spreadsheet->getActiveSheet();
+        $firstRow = true; // Флаг для определения первой строки
+        foreach ($worksheet->getRowIterator() as $row) {
+            if ($firstRow) {
+                $firstRow = false; // Пропустить первую строку
+                continue;
+            }
+
+            $productId = (int)$worksheet->getCell('A' . $row->getRowIndex())->getValue();
+            $productPrice = $worksheet->getCell('G' . $row->getRowIndex())->getValue();
+            $productCategory = (int)$worksheet->getCell('R' . $row->getRowIndex())->getValue();
+
+            $data[$productId] = [
+                'price' => $productPrice,
+                'category' => $productCategory,
+            ];
+        }
+
+        print_r($data);
+
+        // Шаг 2
+        $xmlData = file_get_contents($xmlFilePath);
+        $xml = new SimpleXMLElement($xmlData);
+
+        // Шаг 3: Обновить цену товаров в XML файле, только если они принадлежат к категориям из XLSX
+        foreach ($xml->shop->offers->offer as $offer) {
+
+            $productId = (int)$offer->attributes()['id'];
 
 
+            $categoryId = (int)$offer->categoryId;
+            print_r($categoryId);
+            // Проверка на принадлежность товара к нужной категории
+            if (isset($categories[$categoryId])) {
+                if (isset($data[$productId])) {
+                    $productPrice = $data[$productId]['price'];
+                    $offer->price = $productPrice;
+                }
+            }
+        }
 
+        // Переименование старого файла
+        if (file_exists($xmlFilePath)) {
+            rename($xmlFilePath, $xmlFilePath . date('Y-m-d_H-i-s') . '.xml');
+        }
 
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
+        // Шаг 4: Сохранить результаты в редактируемый XML файл и переименовать старый файл
+        file_put_contents($xmlFilePath, $xml->asXML());
+    }
 
     public function upload(Request $request)
     {
