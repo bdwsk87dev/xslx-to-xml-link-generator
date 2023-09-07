@@ -241,21 +241,18 @@ class XmlFileController extends Controller
 
         $rowArray = $worksheet->toArray();
 
+        $firstRowSe = true;
         foreach ($rowArray as $rowArray) {
             $offer = [];
-            if ($firstRow) {
-                $firstRow = false; // Пропустить первую строку
+            if ($firstRowSe) {
+                $firstRowSe = false; // Пропустить первую строку
                 continue;
             }
             $productId = $rowArray[0];
 
-
-            if (!isset($existingProducts[$productId])) {
-
+            if (!isset($existingProducts[$productId]) && $rowArray[0] !="") {
 
                 $offer = $xml->shop->offers->addChild('offer', '');
-
-
 
                 $offer->addChild('ID', $rowArray[0]);
                 $offer->addChild('name', htmlspecialchars($rowArray[3]));
