@@ -293,13 +293,10 @@ class XmlFileController extends Controller
                 if (!empty($rowArray[29]) && $rowArray[29] !== "NULL") {
                     $param = $offer->addChild('Param', '');
                     $param->addChild('Name', $rowArray[27]);
-                    $param->addChild('Unit', '');
                     $param->addChild('Value', $rowArray[29]);
                 }
             }
         }
-
-
 
         // Переименование старого файла
         if (file_exists($xmlFilePath)) {
@@ -486,86 +483,47 @@ class XmlFileController extends Controller
                     $offer['vendor'] = $row[18];
                 }
 
+
                 if (!empty($row[29]) && $row[29] !== "NULL") {
-                    $offer['Param'][] = [
-                        'Name' => $row[27],
-                        'Unit' => '',
-                        'Value' => $row[29],
-                    ];
+                    $offer['params'][] = ['param' => [ 'Name' => $row[27], 'Value' => $row[29]]];
                 }
 
                 if (!empty($row[32]) && $row[32] !== "NULL") {
-                    $offer['Param'][] = [
-                        'Name' => $row[30],
-                        'Unit' => '',
-                        'Value' => $row[32],
-                    ];
+                    $offer['params'][] = ['param' => [ 'Name' => $row[30], 'Value' => $row[32]]];
                 }
 
 
                 if (!empty($row[35]) && $row[35] !== "NULL") {
-                    $offer['Param'][] = [
-                        'Name' => $row[33],
-                        'Unit' => '',
-                        'Value' => $row[35],
-                    ];
+                    $offer['params'][] = ['param' => [ 'Name' => $row[33], 'Value' => $row[35]]];
                 }
 
                 if (!empty($row[38]) && $row[38] !== "NULL") {
-                    $offer['Param'][] = [
-                        'Name' => $row[36],
-                        'Unit' => '',
-                        'Value' => $row[38],
-                    ];
+                    $offer['params'][] = ['param' => [ 'Name' => $row[36], 'Value' => $row[38]]];
                 }
 
 
                 if (!empty($row[41]) && $row[41] !== "NULL") {
-                    $offer['Param'][] = [
-                        'Name' => $row[39],
-                        'Unit' => '',
-                        'Value' => $row[41],
-                    ];
+                    $offer['params'][] = ['param' => [ 'Name' => $row[39], 'Value' => $row[41]]];
                 }
 
                 if (!empty($row[44]) && $row[44] !== "NULL") {
-                    $offer['Param'][] = [
-                        'Name' => $row[42],
-                        'Unit' => '',
-                        'Value' => $row[44],
-                    ];
+                    $offer['params'][] = ['param' => [ 'Name' => $row[42], 'Value' => $row[44]]];
                 }
 
                 if (!empty($row[47]) && $row[47] !== "NULL") {
-                    $offer['Param'][] = [
-                        'Name' => $row[45],
-                        'Unit' => '',
-                        'Value' => $row[47],
-                    ];
+                    $offer['params'][] = ['param' => [ 'Name' => $row[45], 'Value' => $row[47]]];
                 }
 
                 if (!empty($row[50]) && $row[50] !== "NULL") {
-                    $offer['Param'][] = [
-                        'Name' => $row[48],
-                        'Unit' => '',
-                        'Value' => $row[50],
-                    ];
+                    $offer['params'][] = ['param' => [ 'Name' => $row[48], 'Value' => $row[50]]];
                 }
 
                 if (!empty($row[53]) && $row[53] !== "NULL") {
-                    $offer['Param'][] = [
-                        'Name' => $row[51],
-                        'Unit' => '',
-                        'Value' => $row[53],
-                    ];
+                    $offer['params'][] = ['param' => [ 'Name' => $row[51], 'Value' => $row[53]]];
                 }
 
                 if (!empty($row[56]) && $row[56] !== "NULL") {
-                    $offer['Param'][] = [
-                        'Name' => $row[54],
-                        'Unit' => '',
-                        'Value' => $row[56],
-                    ];
+                    $offer['params'][] = ['param' => [ 'Name' => $row[54], 'Value' => $row[56]]];
                 }
 
                 $shop['offers'][] = ['offer' => $offer];
@@ -620,6 +578,7 @@ class XmlFileController extends Controller
         $indentation = str_repeat('  ', $level);
 
         foreach ($array as $key => $value) {
+
             if (is_array($value)) {
 
                 // Up
@@ -648,13 +607,22 @@ class XmlFileController extends Controller
                         continue;
                     }
 
+
+                    if($key == "param"){
+                        $xml .= $indentation . "<$key name=\"".$value['Name']."\">".$value['Value']."</$key> \n";
+                        continue;
+                    }
+
                     // Если оффер, тогда добавляем параметр в тег
                     if($key == "offer"){
                         $xml .= $indentation . "<$key id=\"".$value['ID']."\" available=\"true\"> \n";
                     }
 
+
+
+
                     else{
-                        if($key!="pictures") {
+                        if($key!="pictures" && $key!="params") {
                             $xml .= $indentation . "<$key>\n";
                         }
                     }
@@ -663,12 +631,15 @@ class XmlFileController extends Controller
                 $xml .= $this->arrayToXml($value, $level + 1);
 
                 if (!is_numeric($key)) {
-                    if($key!="pictures") {
+                    if($key!="pictures" && $key!="params") {
                         $xml .= $indentation . "</$key>\n";
                     }
                 }
 
             } else {
+
+
+
 
                 // Pictures
                 if($key == "ID"){
@@ -679,6 +650,7 @@ class XmlFileController extends Controller
                 if($key === "Name"){
                     $xml .= $indentation . "<$key>" . htmlspecialchars($value) . "</$key>\n";
                 }
+
 
                 // other
                 else{
