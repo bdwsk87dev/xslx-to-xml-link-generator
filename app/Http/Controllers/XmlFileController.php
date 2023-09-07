@@ -178,10 +178,12 @@ class XmlFileController extends Controller
             ];
         }
 
+
         // Шаг 2
         $xmlData = file_get_contents($xmlFilePath);
         $xml = new SimpleXMLElement($xmlData);
         $totalProducts = count($xml->shop->offers->offer);
+
 
         // Шаг 3: Обновить цену товаров в XML файле, только если они принадлежат к категориям из XLSX
         $interval = 10; // Интервал для записи процента выполнения
@@ -219,11 +221,88 @@ class XmlFileController extends Controller
                     fwrite($file, $completionPercentage);
                     fclose($file);
                 } else {
+                    // Обработчик ошибки
                 }
 
                 $interval += 10;
             }
         }
+
+
+
+
+        // Шаг 4: Добавление товаров, которых нет
+
+        $existingProducts = [];
+        foreach ($xml->shop->offers->offer as $offer) {
+            $productId = (int)$offer->attributes()['id'];
+            $existingProducts[$productId] = true;
+        }
+
+        $rowArray = $worksheet->toArray();
+
+        foreach ($rowArray as $rowArray) {
+            $offer = [];
+            if ($firstRow) {
+                $firstRow = false; // Пропустить первую строку
+                continue;
+            }
+            $productId = $rowArray[0];
+
+
+            if (!isset($existingProducts[$productId])) {
+
+
+                $offer = $xml->shop->offers->addChild('offer', '');
+
+
+
+                $offer->addChild('ID', $rowArray[0]);
+                $offer->addChild('name', htmlspecialchars($rowArray[3]));
+                $offer->addChild('price', $rowArray[6]);
+
+                // Добавьте остальные данные о товаре
+                $offer->addChild('currencyId', 'PLN');
+                $offer->addChild('categoryId', $rowArray[17] ?? null);
+                $offer->addChild('pictures', "");
+                $offer->addChild('pickup', "false");
+                $offer->addChild('delivery', "true");
+                $offer->addChild('description', '<![CDATA[ ' . $rowArray[5]. ']]>');
+
+                // Добавление изображений
+                if (!empty($rowArray[13])) {
+                    $imageUrls = explode(',', $rowArray[13]);
+                    foreach ($imageUrls as $imageUrl) {
+                        $imageUrl = trim($imageUrl);
+                        if (!empty($imageUrl)) {
+                            $picture = $offer->addChild('picture', $imageUrl);
+                        }
+                    }
+                }
+
+                // Добавление остальных полей
+                if (!empty($rowArray[1]) && $rowArray[1] !== "NULL") {
+                    $offer->addChild('barcode', $rowArray[1]);
+                }
+
+                if (!empty($rowArray[7]) && $rowArray[7] !== "NULL") {
+                    $offer->addChild('oldprice', $rowArray[7]);
+                }
+
+                if (!empty($rowArray[18]) && $rowArray[18] !== "NULL") {
+                    $offer->addChild('vendor', $rowArray[18]);
+                }
+
+                if (!empty($rowArray[29]) && $rowArray[29] !== "NULL") {
+                    $param = $offer->addChild('Param', '');
+                    $param->addChild('Name', $rowArray[27]);
+                    $param->addChild('Unit', '');
+                    $param->addChild('Value', $rowArray[29]);
+                }
+            }
+        }
+
+
 
         // Переименование старого файла
         if (file_exists($xmlFilePath)) {
