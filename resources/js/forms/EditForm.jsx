@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import axios from 'axios';
 
 const EditForm = ({ productId, onClose }) => {
@@ -11,6 +11,7 @@ const EditForm = ({ productId, onClose }) => {
         allowNewProducts: false,
         filename: '',
     });
+    const [completionPercentage, setCompletionPercentage] = useState(0);
 
     const handleFileChange = (e) => {
         const file = e.target.files[0];
@@ -19,6 +20,27 @@ const EditForm = ({ productId, onClose }) => {
             filename: file,
         }));
     };
+
+    const fetchCompletionPercentage = async () => {
+        try {
+            const response = await axios.get('/get-completion-percentage');
+            const percentage = response.data.percentage;
+            console.log(percentage);
+            setCompletionPercentage(percentage);
+        } catch (error) {
+            console.error('Ошибка при получении процента выполнения:', error);
+        }
+    };
+
+    useEffect(() => {
+        // Вызывайте функцию для загрузки процента выполнения каждую секунду
+        const intervalId = setInterval(() => {
+            fetchCompletionPercentage();
+        }, 1000);
+
+        // Очистка интервала при размонтировании компонента
+        return () => clearInterval(intervalId);
+    }, []);
 
     const handleSubmit = async (e) => {
         e.preventDefault();
@@ -59,9 +81,17 @@ const EditForm = ({ productId, onClose }) => {
     };
 
     return (
+
         <div className="modal-background">
             <div className="modal">
                 <h2>Редагування файлу</h2>
+
+                <div>
+                    <label>
+                        Процент выполнения: {completionPercentage !== null ? `${completionPercentage}%` : 'Загрузка...'}
+                    </label>
+                </div>
+
                 <p>ID: {productId}</p>
                 <form onSubmit={handleSubmit}>
                     <div>

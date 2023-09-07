@@ -156,6 +156,7 @@ class XmlFileController extends Controller
 
     public function updateXmlFileFromXlsx($xmlFilePath, $xlsxFilePath, $categories, $deleteProducts, $allowNewProducts)
     {
+
         // Шаг 1: Прочитать данные из xlsx файла
         $data = [];
         $spreadsheet = IOFactory::load($xlsxFilePath);
@@ -177,26 +178,50 @@ class XmlFileController extends Controller
             ];
         }
 
-        print_r($data);
-
         // Шаг 2
         $xmlData = file_get_contents($xmlFilePath);
         $xml = new SimpleXMLElement($xmlData);
+        $totalProducts = count($xml->shop->offers->offer);
 
         // Шаг 3: Обновить цену товаров в XML файле, только если они принадлежат к категориям из XLSX
-        foreach ($xml->shop->offers->offer as $offer) {
+        $interval = 10; // Интервал для записи процента выполнения
 
+        $processedProducts = 0; // Переменная для отслеживания обработанных товаров
+
+        $offers = $xml->shop->offers->offer; // Получаем коллекцию элементов
+        // Цикл идет в обратном порядке, чтобы правильно удалять элементы
+        for ($i = count($offers) - 1; $i >= 0; $i--) {
+            $offer = $offers[$i];
             $productId = (int)$offer->attributes()['id'];
-
-
             $categoryId = (int)$offer->categoryId;
-            print_r($categoryId);
+
             // Проверка на принадлежность товара к нужной категории
             if (isset($categories[$categoryId])) {
+                // если товар существует в новом файле
                 if (isset($data[$productId])) {
                     $productPrice = $data[$productId]['price'];
                     $offer->price = $productPrice;
+                } elseif ($deleteProducts) {
+                    // Если товар не найден и $deleteProducts равен true, удаляем его из старого XML
+                    unset($xml->shop->offers->offer[$i]);
                 }
+            }
+
+            $processedProducts++; // Увеличиваем счетчик обработанных товаров
+
+            // Вычисляем процент выполнения
+            $completionPercentage = ($processedProducts / $totalProducts) * 100;
+
+            if ($completionPercentage >= $interval) {
+                // Записываем процент выполнения в файл
+                $file = fopen('percent.txt', 'w');
+                if ($file) {
+                    fwrite($file, $completionPercentage);
+                    fclose($file);
+                } else {
+                }
+
+                $interval += 10;
             }
         }
 
@@ -206,7 +231,23 @@ class XmlFileController extends Controller
         }
 
         // Шаг 4: Сохранить результаты в редактируемый XML файл и переименовать старый файл
-        file_put_contents($xmlFilePath, $xml->asXML());
+        $newXmlString = $xml->asXML();
+        file_put_contents($xmlFilePath, $newXmlString);
+    }
+
+    public function getCompletionPercentage()
+    {
+        // Читаем процент выполнения из файла
+        $filePath = 'percent.txt';
+        if (file_exists($filePath)) {
+            $completionPercentage = file_get_contents($filePath);
+        } else {
+            // Если файл не существует, установите значение по умолчанию (например, 0)
+            $completionPercentage = 0;
+        }
+
+        // Возвращаем процент выполнения в виде JSON
+        return response()->json(['percentage' => $completionPercentage]);
     }
 
     public function upload(Request $request)

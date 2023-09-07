@@ -27,7 +27,13 @@ Route::middleware(['auth'])->group(function () {
     Route::get('/api/show/{id}', [XmlFileController::class, 'show'])->name('xml.show');
 
     Route::get('/list', [XmlFileController::class, 'index'])->name('xml.list');
+
+
+    Route::get('/get-completion-percentage', [XmlFileController::class, 'getCompletionPercentage']);
 });
+
+
+
 
 Route::middleware(['guest'])->group(function () {
 
